@@ -52,6 +52,7 @@ function extractNiconicoVideoId(url) {
 
 function convertNiconicoUrl(rawUrl) {
   let parsed;
+
   try {
     parsed = new URL(stripTrailingPunctuation(rawUrl));
   } catch {
@@ -65,6 +66,7 @@ function convertNiconicoUrl(rawUrl) {
 
   const converted = new URL(`https://www.nicovideo.gay/watch/${videoId}`);
   const from = parsed.searchParams.get('from');
+
   if (from && /^\d{1,6}$/.test(from)) {
     converted.searchParams.set('from', from);
   }
@@ -74,6 +76,7 @@ function convertNiconicoUrl(rawUrl) {
 
 function convertBilibiliUrl(rawUrl) {
   let parsed;
+
   try {
     parsed = new URL(stripTrailingPunctuation(rawUrl));
   } catch {
@@ -84,9 +87,9 @@ function convertBilibiliUrl(rawUrl) {
 
   const host = parsed.hostname.toLowerCase();
 
-  // b23.tvの短縮URLは、BiliFix対応のvxb23.tvへそのまま渡す。
   if (BILIBILI_SHORT_HOSTS.has(host)) {
     const path = parsed.pathname.replace(/\/+/g, '/');
+
     if (!/^\/[0-9A-Za-z_-]+\/?$/.test(path)) return null;
 
     const converted = new URL(`https://vxb23.tv${path}`);
@@ -129,6 +132,7 @@ function convertedLinksFromMessage(content) {
 
   for (const match of matches) {
     const converted = convertSupportedUrl(match);
+
     if (!converted || seen.has(converted)) continue;
 
     seen.add(converted);

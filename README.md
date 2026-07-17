@@ -1,86 +1,59 @@
-# Discord動画埋め込みBot — Koyeb版 v1.2
+# Discord動画埋め込みBot — Koyeb Buildpack版 v1.4
 
-ニコニコ動画とBilibiliのURLを、Discordで再生可能な埋め込み用URLへ変換して返信します。
-
-## 対応例
-
-### ニコニコ動画
+Koyebのエラー:
 
 ```text
-https://www.nicovideo.jp/watch/sm9
-↓
-https://www.nicovideo.gay/watch/sm9
+Missing lockfile
+Couldn't determine Node.js package manager
 ```
 
-### Bilibili
+を修正した版です。
 
-```text
-https://www.bilibili.com/video/BV1xx411c7mD
-↓
-https://www.vxbilibili.com/video/BV1xx411c7mD?lang=jp
-```
+## 修正内容
 
-```text
-https://b23.tv/AbCd123
-↓
-https://vxb23.tv/AbCd123?lang=jp
-```
+- `package-lock.json` を追加
+- Dockerfileは使用しない
+- Koyeb Buildpackでデプロイ
+- 外部npm依存を0個に変更
+- Node.js標準WebSocketでDiscord Gatewayへ接続
+- ニコニコ動画とBilibiliに対応
 
-Bilibiliの `p` と数値の `t` パラメータは保持します。
-1メッセージにつき最大3件、重複URLは除外します。
-
-## 今回のビルドエラー修正
-
-KoyebのBuildpackはNode.js `22.x` をサポートしています。
-存在しない `22.22.0` ではなく、`package.json` を次に修正済みです。
-
-```json
-"engines": {
-  "node": "22.x"
-}
-```
-
-## GitHubへ上書きするファイル
-
-このZIPを展開し、リポジトリ直下へ次のファイルをすべて上書きしてください。
+## GitHubへアップロードする7ファイル
 
 - README.md
 - index.js
 - koyeb-keepalive.gs
 - link-utils.js
+- package-lock.json
 - package.json
 - test.js
 
-特に `package.json` を必ず上書きしてください。
+前に追加した `Dockerfile` がGitHubにある場合は削除してください。
 
-## Koyeb
-
-Builder:
+## Koyeb設定
 
 ```text
-Buildpack
+Builder: Buildpack
+Run command: npm start
+Port: 8000
+Protocol: HTTP
+Route: /
 ```
 
-Run command:
-
-```text
-npm start
-```
-
-Port:
-
-```text
-8000
-```
-
-Environment variable:
+Environment:
 
 ```text
 DISCORD_TOKEN = Reset後の新しいBot Token
 ```
 
-GitHubへコミットすると自動デプロイされます。
-自動で始まらない場合はKoyebでRedeployを実行してください。
+Health check:
+
+```text
+Method: GET
+Path: /health
+```
+
+保存後にRedeployしてください。
 
 ## Discord Developer Portal
 
@@ -97,9 +70,20 @@ Message Content Intent = ON
 - Embed Links
 - Read Message History
 
+## 成功ログ
+
+```text
+Resolved Node.js version: 22.15.1
+Installing dependencies
+npm start
+✅ HTTP server listening on 0.0.0.0:8000
+Discord Gatewayへ接続します。
+✅ Bot名 がオンラインになりました。
+```
+
 ## GAS
 
-`koyeb-keepalive.gs` のKoyeb URLを実際のURLへ変更します。
+`koyeb-keepalive.gs` のURLを実際のKoyeb URLへ変更します。
 
 ```javascript
 'https://YOUR-KOYEB-APP.koyeb.app/health'
