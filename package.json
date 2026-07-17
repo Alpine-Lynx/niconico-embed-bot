@@ -1,0 +1,18 @@
+{
+  "name": "niconico-discord-embed-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Rewrites Niconico video URLs to nicovideo.gay so Discord can unfurl them as playable embeds.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test test.js",
+    "check": "node --check index.js"
+  },
+  "engines": {
+    "node": "22.22.0"
+  },
+  "dependencies": {
+    "discord.js": "14.26.5"
+  }
+}
