@@ -1,6 +1,6 @@
 {
   "name": "discord-video-embed-bot",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "description": "Zero-dependency Discord bot for Niconico and Bilibili playable embed links.",
   "main": "index.js",

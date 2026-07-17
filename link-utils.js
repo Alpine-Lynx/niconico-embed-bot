@@ -92,9 +92,7 @@ function convertBilibiliUrl(rawUrl) {
 
     if (!/^\/[0-9A-Za-z_-]+\/?$/.test(path)) return null;
 
-    const converted = new URL(`https://vxb23.tv${path}`);
-    converted.searchParams.set('lang', 'jp');
-    return converted.toString();
+    return new URL(`https://vxb23.tv${path}`).toString();
   }
 
   if (!BILIBILI_HOSTS.has(host)) return null;
@@ -117,7 +115,6 @@ function convertBilibiliUrl(rawUrl) {
     converted.searchParams.set('t', start);
   }
 
-  converted.searchParams.set('lang', 'jp');
   return converted.toString();
 }
 

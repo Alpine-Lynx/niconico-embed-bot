@@ -37,7 +37,7 @@ test('standard Bilibili BV URL', () => {
     convertBilibiliUrl(
       'https://www.bilibili.com/video/BV1xx411c7mD'
     ),
-    'https://www.vxbilibili.com/video/BV1xx411c7mD?lang=jp'
+    'https://www.vxbilibili.com/video/BV1xx411c7mD'
   );
 });
 
@@ -46,14 +46,14 @@ test('Bilibili av URL and page parameter', () => {
     convertBilibiliUrl(
       'https://www.bilibili.com/video/av170001?p=2&spm_id_from=x'
     ),
-    'https://www.vxbilibili.com/video/av170001?p=2&lang=jp'
+    'https://www.vxbilibili.com/video/av170001?p=2'
   );
 });
 
 test('b23.tv short URL', () => {
   assert.equal(
     convertBilibiliUrl('https://b23.tv/AbCd123'),
-    'https://vxb23.tv/AbCd123?lang=jp'
+    'https://vxb23.tv/AbCd123'
   );
 });
 
@@ -83,7 +83,7 @@ test('deduplicates mixed links and limits to three', () => {
 
   assert.deepEqual(convertedLinksFromMessage(content), [
     'https://www.nicovideo.gay/watch/sm1',
-    'https://www.vxbilibili.com/video/BV1xx411c7mD?lang=jp',
-    'https://vxb23.tv/AbCd123?lang=jp',
+    'https://www.vxbilibili.com/video/BV1xx411c7mD',
+    'https://vxb23.tv/AbCd123',
   ]);
 });

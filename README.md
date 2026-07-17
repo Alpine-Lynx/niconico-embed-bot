@@ -1,4 +1,4 @@
-# Discord動画埋め込みBot — Koyeb Buildpack版 v1.4
+# Discord動画埋め込みBot — Koyeb Buildpack版 v1.5
 
 Koyebのエラー:
 
@@ -88,3 +88,22 @@ Discord Gatewayへ接続します。
 ```javascript
 'https://YOUR-KOYEB-APP.koyeb.app/health'
 ```
+
+
+## v1.5変更点
+
+Bilibili変換URLへ `?lang=jp` を付けないように変更しました。
+
+```text
+https://www.bilibili.com/video/BV1xx411c7mD
+↓
+https://www.vxbilibili.com/video/BV1xx411c7mD
+```
+
+```text
+https://b23.tv/AbCd123
+↓
+https://vxb23.tv/AbCd123
+```
+
+`p` や `t` が元URLに含まれる場合は、その値だけ保持します。
