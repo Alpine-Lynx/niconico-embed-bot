@@ -1,22 +1,40 @@
 'use strict';
 
 const MAX_LINKS_PER_MESSAGE = 3;
-const ALLOWED_HOSTS = new Set([
+const URL_PATTERN = /https?:\/\/[^\s<>]+/gi;
+
+const NICONICO_HOSTS = new Set([
   'nicovideo.jp',
   'www.nicovideo.jp',
   'sp.nicovideo.jp',
   'nico.ms',
 ]);
-const VIDEO_ID_PATTERN = /^(?:[a-z]{2}\d+|\d+)$/i;
-const URL_PATTERN = /https?:\/\/[^\s<>]+/gi;
+
+const BILIBILI_HOSTS = new Set([
+  'bilibili.com',
+  'www.bilibili.com',
+  'm.bilibili.com',
+]);
+
+const BILIBILI_SHORT_HOSTS = new Set([
+  'b23.tv',
+  'www.b23.tv',
+]);
+
+const NICONICO_VIDEO_ID_PATTERN = /^(?:[a-z]{2}\d+|\d+)$/i;
+const BILIBILI_VIDEO_ID_PATTERN = /^(?:BV[0-9A-Za-z]+|av\d+)$/i;
 
 function stripTrailingPunctuation(value) {
-  return value.replace(/[.,!?;:、。！？）》」』】〉》]+$/u, '');
+  return String(value || '').replace(/[.,!?;:、。！？）》」』】〉》]+$/u, '');
 }
 
-function extractVideoId(url) {
+function isHttpUrl(url) {
+  return url.protocol === 'https:' || url.protocol === 'http:';
+}
+
+function extractNiconicoVideoId(url) {
   const host = url.hostname.toLowerCase();
-  if (!ALLOWED_HOSTS.has(host)) return null;
+  if (!NICONICO_HOSTS.has(host)) return null;
 
   const segments = url.pathname.split('/').filter(Boolean);
   let videoId = null;
@@ -27,7 +45,7 @@ function extractVideoId(url) {
     videoId = segments[1];
   }
 
-  if (!videoId || !VIDEO_ID_PATTERN.test(videoId)) return null;
+  if (!videoId || !NICONICO_VIDEO_ID_PATTERN.test(videoId)) return null;
   if (/^lv\d+$/i.test(videoId)) return null;
   return videoId;
 }
@@ -40,15 +58,68 @@ function convertNiconicoUrl(rawUrl) {
     return null;
   }
 
-  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null;
+  if (!isHttpUrl(parsed)) return null;
 
-  const videoId = extractVideoId(parsed);
+  const videoId = extractNiconicoVideoId(parsed);
   if (!videoId) return null;
 
   const converted = new URL(`https://www.nicovideo.gay/watch/${videoId}`);
   const from = parsed.searchParams.get('from');
-  if (from && /^\d{1,6}$/.test(from)) converted.searchParams.set('from', from);
+  if (from && /^\d{1,6}$/.test(from)) {
+    converted.searchParams.set('from', from);
+  }
+
   return converted.toString();
+}
+
+function convertBilibiliUrl(rawUrl) {
+  let parsed;
+  try {
+    parsed = new URL(stripTrailingPunctuation(rawUrl));
+  } catch {
+    return null;
+  }
+
+  if (!isHttpUrl(parsed)) return null;
+
+  const host = parsed.hostname.toLowerCase();
+
+  // b23.tvの短縮URLは、BiliFix対応のvxb23.tvへそのまま渡す。
+  if (BILIBILI_SHORT_HOSTS.has(host)) {
+    const path = parsed.pathname.replace(/\/+/g, '/');
+    if (!/^\/[0-9A-Za-z_-]+\/?$/.test(path)) return null;
+
+    const converted = new URL(`https://vxb23.tv${path}`);
+    converted.searchParams.set('lang', 'jp');
+    return converted.toString();
+  }
+
+  if (!BILIBILI_HOSTS.has(host)) return null;
+
+  const segments = parsed.pathname.split('/').filter(Boolean);
+  if (segments[0] !== 'video' || !segments[1]) return null;
+
+  const videoId = segments[1];
+  if (!BILIBILI_VIDEO_ID_PATTERN.test(videoId)) return null;
+
+  const converted = new URL(`https://www.vxbilibili.com/video/${videoId}`);
+
+  const page = parsed.searchParams.get('p');
+  if (page && /^\d{1,4}$/.test(page)) {
+    converted.searchParams.set('p', page);
+  }
+
+  const start = parsed.searchParams.get('t');
+  if (start && /^\d{1,7}$/.test(start)) {
+    converted.searchParams.set('t', start);
+  }
+
+  converted.searchParams.set('lang', 'jp');
+  return converted.toString();
+}
+
+function convertSupportedUrl(rawUrl) {
+  return convertNiconicoUrl(rawUrl) || convertBilibiliUrl(rawUrl);
 }
 
 function convertedLinksFromMessage(content) {
@@ -57,10 +128,12 @@ function convertedLinksFromMessage(content) {
   const seen = new Set();
 
   for (const match of matches) {
-    const converted = convertNiconicoUrl(match);
+    const converted = convertSupportedUrl(match);
     if (!converted || seen.has(converted)) continue;
+
     seen.add(converted);
     output.push(converted);
+
     if (output.length >= MAX_LINKS_PER_MESSAGE) break;
   }
 
@@ -68,8 +141,10 @@ function convertedLinksFromMessage(content) {
 }
 
 module.exports = {
+  convertBilibiliUrl,
   convertNiconicoUrl,
+  convertSupportedUrl,
   convertedLinksFromMessage,
-  extractVideoId,
+  extractNiconicoVideoId,
   stripTrailingPunctuation,
 };

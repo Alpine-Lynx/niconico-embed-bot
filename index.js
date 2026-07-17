@@ -11,7 +11,7 @@ const {
 const { convertedLinksFromMessage } = require('./link-utils');
 
 const TOKEN = process.env.DISCORD_TOKEN?.trim();
-const PORT = Number(process.env.PORT || 10000);
+const PORT = Number(process.env.PORT || 8000);
 const USER_COOLDOWN_MS = 3000;
 const cooldowns = new Map();
 
@@ -69,7 +69,7 @@ async function main() {
 
   client.once('ready', readyClient => {
     console.log(`✅ ${readyClient.user.tag} がオンラインになりました。`);
-    readyClient.user.setActivity('ニコニコ動画リンク', {
+    readyClient.user.setActivity('ニコニコ・Bilibiliリンク', {
       type: ActivityType.Watching,
     });
   });
@@ -84,7 +84,7 @@ async function main() {
 
     try {
       // A plain proxy URL is intentional: Discord itself creates the playable
-      // media card from nicovideo.gay's metadata. A custom bot embed cannot
+      // media card from the proxy service metadata. A custom bot embed cannot
       // define Discord's video player field.
       await message.reply({
         content: links.join('\n'),

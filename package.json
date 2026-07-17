@@ -1,8 +1,8 @@
 {
-  "name": "niconico-discord-embed-bot",
-  "version": "1.0.0",
+  "name": "discord-video-embed-bot",
+  "version": "1.2.0",
   "private": true,
-  "description": "Rewrites Niconico video URLs to nicovideo.gay so Discord can unfurl them as playable embeds.",
+  "description": "Koyeb-hosted Discord bot that rewrites Niconico and Bilibili URLs to playable embed proxy links.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -10,7 +10,7 @@
     "check": "node --check index.js"
   },
   "engines": {
-    "node": "22.22.0"
+    "node": "22.x"
   },
   "dependencies": {
     "discord.js": "14.26.5"
