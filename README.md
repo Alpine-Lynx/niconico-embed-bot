@@ -1,4 +1,4 @@
-# Discord動画埋め込みBot — Koyeb Buildpack版 v1.5
+# Discord動画埋め込みBot — Koyeb Buildpack版 v1.6
 
 Koyebのエラー:
 
@@ -107,3 +107,21 @@ https://vxb23.tv/AbCd123
 ```
 
 `p` や `t` が元URLに含まれる場合は、その値だけ保持します。
+
+
+## v1.6変更点
+
+元のニコニコ・Bilibili URLが作る埋め込みを非表示にし、
+Botが返信した変換URL側の埋め込みだけを表示します。
+
+元メッセージ本文とURLは削除しません。
+
+### 追加権限
+
+Botへ次の権限を付けてください。
+
+```text
+メッセージの管理（Manage Messages）
+```
+
+権限がない場合、変換URLは返信しますが元URLの埋め込みは残ります。

@@ -49,7 +49,7 @@ async function discordRequest(path, options, retryCount = 0) {
     headers: {
       Authorization: `Bot ${TOKEN}`,
       'Content-Type': 'application/json',
-      'User-Agent': 'DiscordVideoEmbedBot/1.4',
+      'User-Agent': 'DiscordVideoEmbedBot/1.6',
       ...(options.headers || {}),
     },
   });
@@ -72,6 +72,39 @@ async function discordRequest(path, options, retryCount = 0) {
   }
 
   return response;
+}
+
+const SUPPRESS_EMBEDS_FLAG = 1 << 2;
+
+async function suppressOriginalEmbed(message) {
+  if (!message.guild_id) return false;
+
+  const currentFlags = Number(message.flags || 0);
+  const newFlags = currentFlags | SUPPRESS_EMBEDS_FLAG;
+  if (newFlags === currentFlags) return true;
+
+  const response = await discordRequest(
+    `/channels/${encodeURIComponent(message.channel_id)}/messages/${encodeURIComponent(message.id)}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ flags: newFlags }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = (await response.text()).slice(0, 500);
+    if (response.status === 403) {
+      console.warn(
+        '元URLの埋め込みを消せませんでした。Botへ「メッセージの管理」権限を付けてください。'
+      );
+      return false;
+    }
+    throw new Error(
+      `元メッセージの埋め込み抑制に失敗: Discord REST ${response.status}: ${errorText}`
+    );
+  }
+
+  return true;
 }
 
 async function replyToMessage(message, content) {
@@ -111,9 +144,10 @@ async function handleMessageCreate(message) {
   if (userId && userIsCoolingDown(userId)) return;
 
   try {
+    await suppressOriginalEmbed(message);
     await replyToMessage(message, links.join('\n'));
   } catch (error) {
-    console.error('リンク返信に失敗しました:', error?.message || error);
+    console.error('埋め込み処理に失敗しました:', error?.message || error);
   }
 }
 
@@ -121,7 +155,7 @@ async function getGatewayUrl() {
   try {
     const response = await fetch(`${DISCORD_API}/gateway`, {
       headers: {
-        'User-Agent': 'DiscordVideoEmbedBot/1.4',
+        'User-Agent': 'DiscordVideoEmbedBot/1.6',
       },
     });
 
